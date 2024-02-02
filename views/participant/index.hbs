@@ -1,0 +1,40 @@
+{{#extends "base"}}
+{{#block "title"}}
+Participant
+{{/block}}
+{{#block "content"}}
+{{#extends 'base'}}
+
+{{#block "content"}}
+<h2 class="mt-3">Participant List</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Contact Number</th>
+            <th>Email</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each participant}}
+        <tr>
+            <td>{{this.participant_id}}</td>
+            <td>{{this.name}}</td>
+            <td>{{this.contact_number}}</td>
+            <td>{{this.email}}</td>
+             <td><a href="/participant/{{this.organiser_id}}/update" class="btn btn-primary btn-sm">Update</a></td>
+             <td> <a href="/participant/{{this.organiser_id}}/delete" class="btn btn-danger btn-sm">Delete</a></td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
+
+{{/block}}
+
+{{/extends}}
+{{/block}}
+
+{{/extends}}

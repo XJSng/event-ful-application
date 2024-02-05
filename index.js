@@ -3,6 +3,8 @@ const hbs = require("hbs")
 const wax = require("wax-on")
 const mysql2 = require('mysql2/promise');
 const dotenv = require('dotenv');
+const momentHandler = require('handlebars.moment') 
+momentHandler.registerHelpers(hbs)
 dotenv.config();
 
 const handlebarHelpers = require('handlebars-helpers')({
@@ -17,7 +19,6 @@ app.set('view engine', 'hbs');
 // Use Wax-On for additional Handlebars helpers
 wax.on(hbs.handlebars);
 wax.setLayoutPath('./views/layouts');
-
 
 
 // Here is the main function where all the routes go
@@ -115,12 +116,30 @@ async function main() {
         })
     })
 
+    // GET READ EVENT route
+    app.get("/event", async (req, res) => {
+        let query = `SELECT event.*, organiser.name AS organiser_name, 
+        organiser.email AS organiser_email, 
+        organiser.contact_number AS organiser_contact_number, participant.* 
+         FROM event JOIN organiser
+        ON event.organiser_id = organiser.organiser_id
+        JOIN participant
+        ON event.participant_id = participant.participant_id
+        ORDER BY event_id
+        `
+        const [event] = await connection.execute(query);
+        res.render("event/index", {
+            event
+        })
+    })
 
 
+    // Homepage
     app.get('/', function (req, res) {
         res.render("index");
     })
 }
+
 main()
 
 app.listen(3000, () => {

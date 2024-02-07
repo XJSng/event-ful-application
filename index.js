@@ -32,6 +32,10 @@ async function main() {
         'password': process.env.DB_PASSWORD
     })
 
+    // SEARCH route
+    // const searchRoute = [req.params.res]
+    // app.get(`/${searchRoute}/`)
+
     // GET READ organiser route
     app.get("/organiser", async (req, res) => {
         let query = `SELECT * FROM organiser`

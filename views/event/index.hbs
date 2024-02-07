@@ -2,10 +2,9 @@
 {{#block "title"}}
 Organiser
 {{/block}}
-{{#block "content"}}
-{{#extends 'base'}}
 
 {{#block "content"}}
+
 <div class="container">
     <div class="row">
         <div class="col-10">
@@ -14,7 +13,6 @@ Organiser
         <div class="col-2"><a href="/event/create" class="mt-3 btn btn-success">Add New
                 Event</a></div>
     </div>
-</div>
 </div>
 
 <table class="table">
@@ -50,7 +48,7 @@ Organiser
 
 {{/block}}
 
-{{/extends}}
-{{/block}}
+{{#block "searchResults"}}
+  {{/block}}
 
 {{/extends}}

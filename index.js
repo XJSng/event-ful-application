@@ -3,7 +3,7 @@ const hbs = require("hbs")
 const wax = require("wax-on")
 const mysql2 = require('mysql2/promise');
 const dotenv = require('dotenv');
-const momentHandler = require('handlebars.moment') 
+const momentHandler = require('handlebars.moment')
 momentHandler.registerHelpers(hbs)
 dotenv.config();
 
@@ -134,7 +134,7 @@ async function main() {
     })
 
     // CREATE event route
-    app.get("/event/create", async (req, res)=>{
+    app.get("/event/create", async (req, res) => {
         const [event] = await connection.execute(`
         SELECT * FROM event`)
         const [organiser] = await connection.execute(`SELECT * FROM organiser`)
@@ -145,7 +145,7 @@ async function main() {
     })
 
 
-    app.post("/event/create", async(req, res)=>{
+    app.post("/event/create", async (req, res) => {
         const title = req.body.title
         // change date from form to database format
         const unformatedDateString = `${req.body.date} ${req.body.time}`
@@ -163,21 +163,71 @@ async function main() {
     })
 
     // UPDATE
-    app.get("/event/:event_id/update", async(req, res)=>{
-        let query = `SELECT event.* , organiser.name, organiser.contact_number, organiser.email FROM event JOIN organiser
+    app.get("/event/:event_id/update", async (req, res) => {
+        let query = `SELECT event.* , organiser.name AS organiser_name,
+        organiser.contact_number AS organiser_contact_number,
+        organiser.email AS organiser_email
+        , participant.* FROM event JOIN organiser
         ON event.organiser_id = organiser.organiser_id
-        JOIN participant ON event.participant_id = participant.participant_id WHERE event_id`
-        let organiserQuery = `SELECT * FROM organiser`
+        JOIN participant ON event.participant_id = participant.participant_id
+        WHERE event_id = ?`
+
+        // organiser query without event organiser
+        const organiserQuery = `SELECT  organiser.*
+        FROM organiser WHERE
+        organiser_id NOT IN (
+            SELECT event.organiser_id FROM event
+            WHERE event_id = ?
+        )
+       `
+        const participantQuery = `SELECT participant.*
+        FROM participant
+        WHERE participant_id NOT IN (
+            SELECT event.participant_id FROM event
+            WHERE event_id = ?
+        )`
         const [events] = await connection.execute(query, [req.params.event_id]);
         const event = events[0]
-        const [organiser] = await connection.execute(organiserQuery)
+        const [organiser] = await connection.execute(organiserQuery, [req.params.event_id])
+        const [participant] = await connection.execute(participantQuery, [req.params.event_id])
         const eventDateTime = event.date_time.toISOString().split('T')
         event.date = eventDateTime[0]
         event.time = eventDateTime[1].slice(0, -5);
-        console.log(event)
         res.render("event/update", {
-            event, organiser
+            event, organiser, participant
         })
+    })
+
+    app.post("/event/:event_id/update", async (req, res) => {
+        const title = req.body.title
+        // change date from form to database format
+        const unformatedDateString = `${req.body.date} ${req.body.time}`
+        const joinedDateTime = new Date(unformatedDateString)
+        const formattedDate = formatDate(joinedDateTime)
+        const date_time = formattedDate
+        const location = req.body.location
+        const participant_id = req.body.participant_id
+        const organiser_id = req.body.organiser_id
+        const query = `UPDATE event set title = ?, date_time =? , location=?, participant_id=?, organiser_id=?
+        WHERE event_id = ?`
+        const bindings = [title, date_time, location, participant_id, organiser_id, parseInt(req.params.event_id)]
+       await connection.execute(query, bindings)
+        res.redirect("/event")
+
+    })
+
+    app.post("/organiser/:organiser_id/update", async (req, res) => {
+        const { name, contact_number, email } = req.body
+        const organiser_id = parseInt(req.params.organiser_id)
+        console.log(req.params.organiser_id)
+        const query = `
+        UPDATE organiser SET name=?, contact_number=? , email=?, organiser_id=?
+        WHERE organiser_id= ? 
+        `
+        const bindings = [name, parseInt(contact_number), email, organiser_id, organiser_id]
+        console.log(bindings)
+        await connection.execute(query, bindings);
+        res.redirect("/organiser")
     })
 
     // DELETE event route
@@ -212,6 +262,7 @@ app.listen(3000, () => {
 function findById(tableName, table_id) {
     return `SELECT * FROM ${tableName} WHERE ${table_id} = ?`
 }
+
 
 // Function to format date
 function formatDate(dateString) {

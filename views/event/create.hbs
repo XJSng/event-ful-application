@@ -23,27 +23,26 @@ Create New Event
         <label for="location">Event Location:</label>
         <input type="text" id="location" name="location" class="form-control" required>
     </div>
-
     <div>
         <label for="organiser">Event Organiser:</label>
         <select id="organiserId" name="organiser_id" class="form-control" required>
             <option id="0">--------</option>
-                {{#each organiser}}
+            {{#each organiser}}
             <option value="{{this.organiser_id}}">{{this.name}}
                 {{/each}}
             </option>
         </select>
     </div>
     <div>
-           <label for="participant">Event Participant:</label>
+        <label for="participant">Event Participant:</label>
         <select id="participantId" name="participant_id" class="form-control" required>
             <option id="0">--------</option>
-                {{#each participant}}
+            {{#each participant}}
             <option value="{{this.participant_id}}">{{this.name}}
                 {{/each}}
             </option>
         </select>
-          </div>
+    </div>
 
     <button type="submit" class="mt-3 btn btn-primary">Create Event</button>
 </form>

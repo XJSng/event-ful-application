@@ -34,7 +34,30 @@ async function main() {
 
     // SEARCH route
     // const searchRoute = [req.params.res]
-    // app.get(`/${searchRoute}/`)
+    app.post(`/`, async (req, res) => {
+        let sql = `SELECT event.*, organiser.name AS organiser_name, 
+        organiser.email AS organiser_email, 
+        organiser.contact_number AS organiser_contact_number, participant.* 
+        FROM event JOIN organiser
+        ON event.organiser_id = organiser.organiser_id
+        JOIN participant
+        ON event.participant_id = participant.participant_id
+        WHERE 1
+        `
+        const bindings = []
+        if (req.body.searchTerms) {
+            sql += ` AND (title LIKE ? OR organiser.name LIKE ? OR participant.name LIKE ?) ORDER BY event_id ASC`
+            bindings.push(`%${req.body.searchTerms}%`);
+            bindings.push(`%${req.body.searchTerms}%`);
+            bindings.push(`%${req.body.searchTerms}%`);
+        }
+
+        const [event] = await connection.execute(sql, bindings)
+        res.render('index', {
+
+            event
+        });
+    })
 
     // GET READ organiser route
     app.get("/organiser", async (req, res) => {
@@ -215,7 +238,7 @@ async function main() {
         const query = `UPDATE event set title = ?, date_time =? , location=?, participant_id=?, organiser_id=?
         WHERE event_id = ?`
         const bindings = [title, date_time, location, participant_id, organiser_id, parseInt(req.params.event_id)]
-       await connection.execute(query, bindings)
+        await connection.execute(query, bindings)
         res.redirect("/event")
 
     })

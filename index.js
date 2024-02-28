@@ -32,6 +32,11 @@ async function main() {
         'password': process.env.DB_PASSWORD
     })
 
+    // Homepage
+    app.get('/', function (req, res) {
+        res.render("index");
+    })  
+
     // SEARCH route
     // const searchRoute = [req.params.res]
     app.post(`/`, async (req, res) => {
@@ -54,7 +59,6 @@ async function main() {
 
         const [event] = await connection.execute(sql, bindings)
         res.render('index', {
-
             event
         });
     })
@@ -273,10 +277,7 @@ async function main() {
         res.redirect('/event');
     })
 
-    // Homepage
-    app.get('/', function (req, res) {
-        res.render("index");
-    })
+
 }
 
 main()
